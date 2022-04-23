@@ -1,0 +1,23 @@
+{
+  "name": "Manual",
+  "triggers": [
+    {
+      "kind": "workflow_dispatch"
+    }
+  ],
+  "jobs": [
+    {
+      "name": "build",
+      "id": "build",
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "steps": [
+        {
+          "type": "run",
+          "script": "echo \"Hello World\""
+        }
+      ]
+    }
+  ]
+}
