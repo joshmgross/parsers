@@ -15,7 +15,7 @@
       "steps": [
         {
           "type": "run",
-          "script": "echo \"Hello World\""
+          "script": "echo \"Hello world\""
         }
       ]
     }
