@@ -17,10 +17,11 @@ const (
 )
 
 type Job struct {
-	Name      string   `json:"name"`
-	Identifer string   `json:"id"`
-	Labels    []string `json:"labels"`
-	Steps     []Step   `json:"steps"`
+	Name      string            `json:"name"`
+	Identifer string            `json:"id"`
+	Matrix    map[string]string `json:"matrix,omitempty"`
+	Labels    []string          `json:"labels"`
+	Steps     []Step            `json:"steps"`
 }
 
 type Step struct {

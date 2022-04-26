@@ -10,8 +10,13 @@ type WorkflowRoot struct {
 }
 
 type Job struct {
-	Labels string `yaml:"runs-on"`
-	Steps  []Step `yaml:"steps"`
+	Labels   string   `yaml:"runs-on"`
+	Steps    []Step   `yaml:"steps"`
+	Strategy Strategy `yaml:"strategy"`
+}
+
+type Strategy struct {
+	Matrix map[string][]string `yaml:"matrix"`
 }
 
 type Step struct {

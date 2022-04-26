@@ -18,20 +18,41 @@ func Process(wf schema.WorkflowRoot) plan.Plan {
 
 	p.Jobs = make([]plan.Job, 0, len(wf.Jobs))
 	for name, job := range wf.Jobs {
-		pj := plan.Job{
-			Name:      name,
-			Identifer: name,
-			Labels:    strings.Split(job.Labels, ","),
-		}
+		if len(job.Strategy.Matrix) == 0 {
+			pj := plan.Job{
+				Name:      name,
+				Identifer: name,
+				Labels:    strings.Split(job.Labels, ","),
+			}
 
-		pj.Steps = make([]plan.Step, 0, len(job.Steps))
-		for _, step := range job.Steps {
-			pj.Steps = append(pj.Steps, plan.Step{
-				Type:   plan.RunStep,
-				Script: &step.Script,
-			})
+			pj.Steps = make([]plan.Step, 0, len(job.Steps))
+			for _, step := range job.Steps {
+				pj.Steps = append(pj.Steps, plan.Step{
+					Type:   plan.RunStep,
+					Script: &step.Script,
+				})
+			}
+			p.Jobs = append(p.Jobs, pj)
+		} else {
+			for _, matrixLeg := range flattenMatrix(job.Strategy.Matrix) {
+				// TODO: The name and identifier should change within the context of a matrix
+				pj := plan.Job{
+					Name:      name,
+					Identifer: name,
+					Labels:    strings.Split(job.Labels, ","),
+					Matrix:    matrixLeg,
+				}
+
+				pj.Steps = make([]plan.Step, 0, len(job.Steps))
+				for _, step := range job.Steps {
+					pj.Steps = append(pj.Steps, plan.Step{
+						Type:   plan.RunStep,
+						Script: &step.Script,
+					})
+				}
+				p.Jobs = append(p.Jobs, pj)
+			}
 		}
-		p.Jobs = append(p.Jobs, pj)
 	}
 
 	return p

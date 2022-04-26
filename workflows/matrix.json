@@ -1,0 +1,58 @@
+{
+  "name": "Matrix",
+  "triggers": [
+    {
+      "kind": "push"
+    }
+  ],
+  "jobs": [
+    {
+      "name": "build",
+      "id": "build",
+      "matrix": {
+        "node": "10"
+      },
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "steps": [
+        {
+          "type": "run",
+          "script": "echo \"Hello world\""
+        }
+      ]
+    },
+    {
+      "name": "build",
+      "id": "build",
+      "matrix": {
+        "node": "12"
+      },
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "steps": [
+        {
+          "type": "run",
+          "script": "echo \"Hello world\""
+        }
+      ]
+    },
+    {
+      "name": "build",
+      "id": "build",
+      "matrix": {
+        "node": "14"
+      },
+      "labels": [
+        "ubuntu-latest"
+      ],
+      "steps": [
+        {
+          "type": "run",
+          "script": "echo \"Hello world\""
+        }
+      ]
+    }
+  ]
+}
