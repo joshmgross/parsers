@@ -1,0 +1,24 @@
+{
+  "name": "Label array",
+  "triggers": [
+    {
+      "kind": "workflow_dispatch"
+    }
+  ],
+  "jobs": [
+    {
+      "name": "build",
+      "id": "build",
+      "labels": [
+        "self-hosted",
+        "linux"
+      ],
+      "steps": [
+        {
+          "type": "run",
+          "script": "echo \"Hello world\""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+name: Label array
+
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    steps:
+      - run: echo "Hello world"

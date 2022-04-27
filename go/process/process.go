@@ -1,8 +1,6 @@
 package process
 
 import (
-	"strings"
-
 	"github.com/joshmgross/parsers/go/plan"
 	"github.com/joshmgross/parsers/go/schema"
 )
@@ -22,7 +20,7 @@ func Process(wf schema.WorkflowRoot) plan.Plan {
 			pj := plan.Job{
 				Name:      name,
 				Identifer: name,
-				Labels:    strings.Split(job.Labels, ","),
+				Labels:    job.RunsOn.Labels,
 			}
 
 			pj.Steps = make([]plan.Step, 0, len(job.Steps))
@@ -39,7 +37,7 @@ func Process(wf schema.WorkflowRoot) plan.Plan {
 				pj := plan.Job{
 					Name:      name,
 					Identifer: name,
-					Labels:    strings.Split(job.Labels, ","),
+					Labels:    job.RunsOn.Labels,
 					Matrix:    matrixLeg,
 				}
 
