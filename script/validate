@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+root="$(git rev-parse --show-toplevel)"
+
+(
+    cd "$root"/go
+    go run main.go -in="../workflows" -out="../generated"
+)
+
+diff -r "$root"/generated/ "$root"/plans/
