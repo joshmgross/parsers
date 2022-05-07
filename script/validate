@@ -3,9 +3,22 @@
 set -e
 root="$(git rev-parse --show-toplevel)"
 
+# Go
+echo "Validating Go"
 (
+    mkdir -p "$root/generated/go"
     cd "$root"/go
-    go run main.go -in="../workflows" -out="../generated"
+    go run main.go -in="../workflows" -out="$root/generated/go"
 )
 
-diff -r "$root"/generated/ "$root"/plans/
+diff -r "$root"/generated/go "$root"/plans/
+
+# Rust
+echo "Validating Rust"
+(
+    mkdir -p "$root/generated/rust"
+    cd "$root"/rust
+    cargo run
+)
+
+diff -r "$root"/generated/rust/manual.json "$root"/plans/manual.json
