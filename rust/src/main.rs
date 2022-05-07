@@ -1,19 +1,21 @@
+use serde_json;
 use std::fs;
 use std::fs::File;
 
 mod utils;
-
-use utils::workflow::Workflow;
 use utils::process::process;
-use serde_json;
+use utils::workflow::Workflow;
 
 fn main() {
-  let contents =
-    fs::read_to_string("../workflows/manual.yaml").expect("Something went wrong reading the file");
-  let workflow: Workflow = serde_yaml::from_str(&contents).unwrap();
+  let workflows = vec!["manual", "label-array"];
+  for workflow_name in workflows {
+    let contents = fs::read_to_string(format!("../workflows/{}.yaml", workflow_name))
+      .expect("Something went wrong reading the file");
+    let workflow: Workflow = serde_yaml::from_str(&contents).unwrap();
 
-  let plan = process(&workflow).unwrap();
+    let plan = process(&workflow).unwrap();
 
-  let file = File::create("../generated/rust/manual.json").unwrap();
-  serde_json::to_writer_pretty(file, &plan).unwrap();
+    let file = File::create(format!("../generated/rust/{}.json", workflow_name)).unwrap();
+    serde_json::to_writer_pretty(file, &plan).unwrap();
+  }
 }

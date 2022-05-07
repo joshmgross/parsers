@@ -22,3 +22,4 @@ echo "Validating Rust"
 )
 
 diff -r "$root"/generated/rust/manual.json "$root"/plans/manual.json
+diff -r "$root"/generated/rust/label-array.json "$root"/plans/label-array.json

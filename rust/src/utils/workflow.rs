@@ -1,12 +1,8 @@
 use std::collections::BTreeMap as Map;
 use std::fmt;
-use std::marker::PhantomData;
-use std::str::FromStr;
 
-use serde::de::{self, MapAccess, Visitor};
+use serde::de::{SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer};
-
-use void::Void;
 
 #[derive(Debug, Deserialize)]
 pub struct Workflow {
@@ -18,12 +14,11 @@ pub struct Workflow {
 #[derive(Debug, Deserialize)]
 pub struct Job {
   #[serde(rename = "runs-on")]
-  #[serde(deserialize_with = "string_or_struct")]
   pub runs_on: RunsOn,
   pub steps: Vec<Step>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 pub struct RunsOn {
   pub labels: Vec<String>,
 }
@@ -36,56 +31,38 @@ pub struct Step {
   pub run: Option<String>,
 }
 
-impl FromStr for RunsOn {
-  type Err = Void;
-  fn from_str(s: &str) -> Result<Self, Self::Err> {
-    Ok(RunsOn {
-      labels: vec![s.to_owned()],
-    })
-  }
-}
-
-// From https://serde.rs/string-or-struct.html
-fn string_or_struct<'de, T, D>(deserializer: D) -> Result<T, D::Error>
-where
-  T: Deserialize<'de> + FromStr<Err = Void>,
-  D: Deserializer<'de>,
-{
-  // This is a Visitor that forwards string types to T's `FromStr` impl and
-  // forwards map types to T's `Deserialize` impl. The `PhantomData` is to
-  // keep the compiler from complaining about T being an unused generic type
-  // parameter. We need T in order to know the Value type for the Visitor
-  // impl.
-  struct StringOrStruct<T>(PhantomData<fn() -> T>);
-
-  impl<'de, T> Visitor<'de> for StringOrStruct<T>
+impl<'de> Deserialize<'de> for RunsOn {
+  fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
   where
-    T: Deserialize<'de> + FromStr<Err = Void>,
+    D: Deserializer<'de>,
   {
-    type Value = T;
+    struct RunsOnVisitor;
 
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-      formatter.write_str("string or map")
+    impl<'de> Visitor<'de> for RunsOnVisitor {
+      type Value = RunsOn;
+
+      fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a string or sequence of strings")
+      }
+
+      fn visit_str<E>(self, value: &str) -> Result<RunsOn, E> {
+        Ok(RunsOn {
+          labels: vec![value.to_owned()],
+        })
+      }
+
+      fn visit_seq<V>(self, mut seq: V) -> Result<RunsOn, V::Error>
+      where
+        V: SeqAccess<'de>,
+      {
+        let mut labels = vec![];
+        while let Some(label) = seq.next_element()? {
+          labels.push(label);
+        }
+        Ok(RunsOn { labels })
+      }
     }
 
-    fn visit_str<E>(self, value: &str) -> Result<T, E>
-    where
-      E: de::Error,
-    {
-      Ok(FromStr::from_str(value).unwrap())
-    }
-
-    fn visit_map<M>(self, map: M) -> Result<T, M::Error>
-    where
-      M: MapAccess<'de>,
-    {
-      // `MapAccessDeserializer` is a wrapper that turns a `MapAccess`
-      // into a `Deserializer`, allowing it to be used as the input to T's
-      // `Deserialize` implementation. T then deserializes itself using
-      // the entries from the map visitor.
-      Deserialize::deserialize(de::value::MapAccessDeserializer::new(map))
-    }
+    deserializer.deserialize_any(RunsOnVisitor)
   }
-
-  deserializer.deserialize_any(StringOrStruct(PhantomData))
 }
