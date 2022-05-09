@@ -7,7 +7,7 @@ use utils::process::process;
 use utils::workflow::Workflow;
 
 fn main() {
-    let workflows = vec!["manual", "label-array"];
+    let workflows = vec!["manual", "label-array", "matrix"];
     for workflow_name in workflows {
         let contents = fs::read_to_string(format!("../workflows/{}.yaml", workflow_name))
             .expect("Something went wrong reading the file");

@@ -1,4 +1,5 @@
 use serde::Serialize;
+use std::collections::BTreeMap as Map;
 use std::str::FromStr;
 
 #[derive(Debug, Serialize)]
@@ -17,13 +18,15 @@ pub struct Trigger {
 #[serde(rename_all = "snake_case")]
 pub enum WorkflowEvent {
     WorkflowDispatch,
+    Push,
 }
 
 #[derive(Debug, Serialize)]
 pub struct Job {
     pub name: String,
     pub id: String,
-    // todo: matrix
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub matrix: Option<Map<String, String>>,
     pub labels: Vec<String>,
     pub steps: Vec<Step>,
 }
@@ -47,6 +50,7 @@ impl FromStr for WorkflowEvent {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "workflow_dispatch" => Ok(WorkflowEvent::WorkflowDispatch),
+            "push" => Ok(WorkflowEvent::Push),
             _ => Err(()),
         }
     }

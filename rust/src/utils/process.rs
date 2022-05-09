@@ -1,3 +1,4 @@
+use super::matrix::flatten_matrix;
 use super::plan::*;
 use super::workflow::Workflow;
 
@@ -18,22 +19,53 @@ pub fn process(workflow: &Workflow) -> Result<Plan, &str> {
     };
 
     for (name, job) in &workflow.jobs {
-        let mut steps = vec![];
-        for step in &job.steps {
-            let plan_step = super::plan::Step {
-                step_type: StepType::RunStep,
-                script: step.run.clone(),
-            };
-            steps.push(plan_step);
-        }
-        let job = Job {
-            name: name.to_owned(),
-            id: name.to_owned(),
-            labels: job.runs_on.labels.clone(),
-            steps: steps,
-        };
+        match &job.strategy {
+            Some(strategy) => {
+                let legs = flatten_matrix(&strategy.matrix).unwrap();
+                for leg in &legs {
+                    // TODO: Support cloning a step so we don't need to recreate the steps for each job
+                    let mut steps = vec![];
+                    for step in &job.steps {
+                        let plan_step = super::plan::Step {
+                            step_type: StepType::RunStep,
+                            script: step.run.clone(),
+                        };
+                        steps.push(plan_step);
+                    }
 
-        plan.jobs.push(job);
+                    // TODO: The name and identifier should change within the context of a matrix
+                    let plan_job = Job {
+                        name: name.to_owned(),
+                        id: name.to_owned(),
+                        labels: job.runs_on.labels.clone(),
+                        steps: steps,
+                        matrix: Some(leg.clone()),
+                    };
+
+                    plan.jobs.push(plan_job);
+                }
+            }
+            None => {
+                let mut steps = vec![];
+                for step in &job.steps {
+                    let plan_step = super::plan::Step {
+                        step_type: StepType::RunStep,
+                        script: step.run.clone(),
+                    };
+                    steps.push(plan_step);
+                }
+
+                let plan_job = Job {
+                    name: name.to_owned(),
+                    id: name.to_owned(),
+                    labels: job.runs_on.labels.clone(),
+                    steps: steps,
+                    matrix: None,
+                };
+
+                plan.jobs.push(plan_job);
+            }
+        }
     }
 
     Ok(plan)

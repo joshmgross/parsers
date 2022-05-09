@@ -16,6 +16,7 @@ pub struct Job {
     #[serde(rename = "runs-on")]
     pub runs_on: RunsOn,
     pub steps: Vec<Step>,
+    pub strategy: Option<Strategy>,
 }
 
 #[derive(Debug)]
@@ -23,6 +24,10 @@ pub struct RunsOn {
     pub labels: Vec<String>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct Strategy {
+    pub matrix: Map<String, Vec<String>>,
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Step {
