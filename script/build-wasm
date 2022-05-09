@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e
+root="$(git rev-parse --show-toplevel)"
+
+(
+  cd "$root"/rust
+  cargo install wasm-pack
+  wasm-pack build
+  wc -c pkg/parser_bg.wasm
+  echo "gzip size: $(gzip -9 < pkg/parser_bg.wasm | wc -c)"
+)
